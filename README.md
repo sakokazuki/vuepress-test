@@ -202,29 +202,128 @@ front matterでVueに変数渡せるんですがconfigでもできるので、�
 https://github.com/sakokazuki/vuepress-test/tree/0.0.3
 
 
-
-
-
-
-VuePressではwebpackConfigにあたるものをconfig.jsで拡張できるようになっていて
-config.jsのchainWebpackで設定します。
-https://vuepress.vuejs.org/config/#chainwebpack
-
-chain-webpack(https://github.com/mozilla-neutrino/webpack-chain)という
-webpackConfigを作成するライブラリが内部で使われており、
-この形式で記述し内部でconfigを作っているようなのでその記法で書いていきます。
+### head内にmetaをいれたい
+config.jsにheadというオプションを追加します。
 
 ```config.js
-module.exports = {
-    ~
-    chainWebpack: config => {
-        config
-            .module.rule('pug')
-            .test(/\.pug$/)
-            .use('pug-plain-loader')
-                .loader('pug-plain-loader')
-                .end()
+~
+head: [
+    ['meta', {'http-equiv': 'X-UA-Compatible', content: 'IE=edge'}],
+    ['meta', {name: 'keywords', content: 'hoge,fuga,piyo'}],
+]
+```
+配列を追加していき、要素も配列です。
+[0] タグ名
+[1] Objectでattributeを指定
+
+です。
+
+
+[2]に要素の中身を入れられるので変化型としてこういう事もできます
+
+インラインでjs
+```
+['script', { type: 'text/javascript' }, `
+    console.log("head inner script");
+`]
+```
+
+divタグを入れる
+```
+['div', {}, '<!--<div>hoge</div>-->']
+```
+
+### 言語別に<head>の中身を変える
+
+VuePressのconfigにはlocalesというものがあって、
+今回の例でいうとen/以下とdefault(ja)でlant,title,descriptionを
+変更することができます。
+
+https://vuepress.vuejs.org/guide/i18n.html#site-level-i18n-config
+
+それでは書いていきましょう。
+
+```config.js
+locales: {
+    '/': {
+        lang: 'ja',
+        title: 'はじめてのVuePress',
+        description: 'description jp',
+    },
+    '/en/': {
+        lang: 'en',
+        title: 'hello VuePress',
+        description: 'this site generated from VuePress.',
     }
 }
 ```
 
+```bash
+yarn dev
+```
+確認してみましょう。
+chromeで⌘⌥uでソース見ても何も書いていません。
+⌘⌥iでElementみるとちゃんと入っているようですがdescriptionが重複していたり
+なんだかおかしいです。
+
+ビルドして確認してみましょう。
+
+```bash
+yarn build
+```
+
+...うまくいってますね。
+本番ビルドが良ければまぁ開発に影響はないのでいいかなと思います。
+
+ちなみにこのlocalesですがVueComponent内で
+this.$localeConfigで参照できます。
+
+Home.vueのmounted()のなかに`console.log(tihs.$localeConfig)`するだとか
+vue-devtoolを使用すれば確認できるでしょう。
+
+
+### styleの扱いに関して工夫する
+
+僕は基本的にVueComponentごとにstyleを書く方針にしています。
+`<style scoped>`とすれば他のコンポーネントに影響はでないので便利ですよね。
+ですが色とかstylusのmixinとか変数や関数をグローバルで定義したくなるので
+やってみようと思います。
+
+その前に、config.jsにはchainWabpackというoptionがあります。
+https://vuepress.vuejs.org/config/#chainwebpack
+
+これはデフォルトのwebpackConfigを上書き/追加できるオプションで
+VuePressはwebpack-chain(https://github.com/mozilla-neutrino/webpack-chain)
+というwebpackConfigジェネレーターを内部で使用しているのでwebpack-chainの
+記法で書く必要があります。
+
+ひとまず、適当に変数が定義してあるstylusファイルを作りましょう
+
+```bash
+echo '$red = #ff0000' >> app/.vuepress/global.styl
+```
+
+そしてconfigのchainWebpackをつかってプラグインを追加します。
+あ、webpackプラグインを使うのでwebpackをrequireしましょう。pathもついでに。
+
+```config.js
+const webpack = require('webpack')
+const path = require('path')
+
+module.exports = {
+    ~,
+    chainWebpack: config => {
+        config.plugin('loader-option')
+        .use(webpack.LoaderOptionsPlugin, [
+            {
+                options: {
+                    stylus: {
+                        import: [path.resolve(__dirname, './styles/variables.styl')]
+                    }
+                }
+            }
+        ])
+    }
+}
+~
+```
