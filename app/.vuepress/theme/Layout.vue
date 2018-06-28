@@ -1,7 +1,6 @@
-<template>
-  <div class="theme-container">
-    <Content :custom="false"/>
-  </div>
+<template lang="pug">
+  .theme-container
+    Content(:custom="false")
 </template>
 
 <script>
