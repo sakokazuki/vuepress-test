@@ -357,3 +357,91 @@ touch app/.vuepress/theme/styles/reset.styl
 ```Layout.vue
 <style src="./styles/reset.styl" lang="stylus"></style>
 ```
+
+よりシンプルになりました。
+
+### 独自の改造を盛り込む
+
+個人的にconfigと並ぶくらいに重要だと思っているのがここで説明する機能です。
+ドキュメントには以下のように簡潔にしか書いてありませんが。
+https://vuepress.vuejs.org/guide/basic-config.html#app-level-enhancements
+
+うまく説明ができないのですが.vuepress/enhanceAppp.js内でVueアプリケーションレベルで
+いろいろ設定できるようになっているという感じでしょうか。
+とりあえずenhanceApp.jsにいろいろ書けばなんとかなるというケースが非常に多かったです。
+
+
+```bash
+touch app/.vuepress/enhanceApp.js
+```
+
+例えば以下のように書けばvue-routerのミドルウェアとかを書く事もできますし、
+
+```enhanceApp.js
+
+export default ({
+  Vue,
+  options,
+  router,
+  siteData
+}) => {
+  async function beforeEach(to, from, next) {
+    console.log("before");
+    return next();
+  }
+  
+  async function afterEach(to, from, next) {
+    console.log("after");
+    await router.app.$nextTick()
+  }
+
+  router.beforeEach(beforeEach)
+  router.afterEach(afterEach)
+}
+```
+
+vueのプラグインを使ったり、mixinとかもここに書くのがいいのかなと思います。
+
+```enhanceApp.js
+~
+Vue.use(MyPlugin);
+Vue.mixin({
+    created: function () {
+        console.log("created")
+    }
+})
+```
+
+### Vuexをつかう
+
+執筆時現在VuePress v0.10.2では標準でvuex使えるようになっていません。
+なので自力でいれます。
+
+```bash
+yarn add -D vuex
+```
+
+先程のenhanceApp.jsのrouterミドルウェアと組み合わせて簡単な言語の状態を持つsotreをつくってみました。
+長いのでコードはリンク先をみてみてください。
+
+
+せっかくなのでHome.vueで現在の言語を表示してみたりしましょう。
+
+```
+computed: {
+    ...mapState(['currentLang']),
+}
+```
+
+1度設定してしまえばあとはVuePressということを意識せずにVuexを使った
+そこそこ複雑なwebサイトをつくることができます。
+トリッキーなwebサイト制作ではいろんな場面で状態を持つコードを書くことが多いので
+かなり大活躍します。
+例えばウインドウのサイズをstoreのstateに保持しておいてリサイズ時にstoreにcommit、コンポーネントの更新
+というわりかしきれいな流れでレスポンシブに変化するサイトをつくることができます。
+
+他にも、この記事(https://qiita.com/RikutoYamaguchi/items/2fb1c1dc8be196dfc883)
+を参考にさせていただきモーダルウインドウをつくりましたが、旧来やっていた方法と比べると
+無理のない形で実装ができて満足度が高かったです。
+
+https://github.com/sakokazuki/vuepress-test/tree/0.0.5
