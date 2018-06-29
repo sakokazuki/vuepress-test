@@ -423,6 +423,7 @@ yarn add -D vuex
 
 先程のenhanceApp.jsのrouterミドルウェアと組み合わせて簡単な言語の状態を持つsotreをつくってみました。
 長いのでコードはリンク先をみてみてください。
+https://github.com/sakokazuki/vuepress-test/blob/0.0.5/app/.vuepress/enhanceApp.js
 
 
 せっかくなのでHome.vueで現在の言語を表示してみたりしましょう。
@@ -432,6 +433,7 @@ computed: {
     ...mapState(['currentLang']),
 }
 ```
+https://github.com/sakokazuki/vuepress-test/blob/0.0.5/app/.vuepress/components/Home.vue
 
 1度設定してしまえばあとはVuePressということを意識せずにVuexを使った
 そこそこ複雑なwebサイトをつくることができます。
