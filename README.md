@@ -1,14 +1,33 @@
+## はじめに
+
+VuePressを使ってwebサイトをつくってみたら最高な気持ちになれたので
+サイト制作に使うためのノウハウをシェアしたいと思い、書きました。
+若干トリッキーな使い方をしているので賛否両論あるかとおもいますが
+どうぞよろしくおねがいします。
+
+ここでいう"サイト制作"というのはおそらくVuePressが想定しているAPIドキュメント等の制作ではなく
+ポートフォリオサイトや広告キャンペーン等の凝ったデザインのサイト制作を指しています。
+
+記事を読みながらコピペしていったら動かせるを目標にかなり丁寧に書いたらすごく長い記事に
+なってしまいましたが最後まで読めばもう(gulp等任意のタスクランナー)+pug+stylus+es6
+みたいな構成とは全く違うアプローチでのサイト制作ができるのではないかと思います。
 
 執筆時(2018.6.28)vuepressのバージョンは0.10.2
+です。
+
 ## 導入
 とりあえず何も考えずに
+
 ```bash
+mkdir vuepress-test
+cd vuepress-test
 npm init
 yarn add -D vuepress
 ```
 
 vuepressの環境はここではapp以下に置くことにしましょう。
 また、index.htmlに値するmdファイルをとりあえず置きます。
+
 ```bash
 mkdir app
 echo '# Hello VuePress' > app/index.md
@@ -24,9 +43,11 @@ package.jsonにコマンド書きます。
 ```
 
 ここまで準備ができたら
+
 ```bash
 yarn dev
 ```
+
 でlocalhost:8080にアプリが立ち上がります。
 
 これはデフォルトのテーマになっていてこのままだと
@@ -487,3 +508,81 @@ locales: {
     }
 },
 ```
+
+前はこれでできた気がしたのですが現在のバージョンではこの書き方では反映されません。
+自前で実装しましょう。
+VuePressのソースコードのlib/build.jsのrenderPageらへんが参考になりました。
+というより関数を移植するだけです。
+
+Layout.vueのcreated()に書いてある$ssrContextらへんの記述でビルド時にタイトルとか
+ディスクリプションを設定してますが$ssrContextのパラメーターにuserHeadTagsという
+stringがあるのでそれにmetaを追加するのがよさそうです。
+
+```
+userHeadTags: '<meta http-equiv="X-UA-Compatible" content="IE=edge">\n  <meta name="keywords" content="hoge,fuga,piyo">',
+```
+
+こんなパラメーターを持ってるので
+```
+$ssrContext.userHeadTags += '<meta og:type content="website">'
+```
+とかしたいイメージです。
+
+とりあえずLayout.vueに書いたので興味があればみてみてください。
+Layout.uve
+
+https://github.com/sakokazuki/vuepress-test/blob/0.0.6/app/.vuepress/theme/Layout.vue
+
+全体
+https://github.com/sakokazuki/vuepress-test/tree/0.0.6
+
+
+## VuePressの悪いところ
+
+ここまで実装ができていればかなりのVuePressに慣れるのではないかと思います。
+きっと自分の目的に合わせて拡張していくことができると思います。
+
+最後にこの素晴らしい環境VuePressですが逆に面倒な部分もあるので
+そこを軽く紹介してこの記事を閉めます。
+
+意外と気になる部分が1つしかなかったので
+思い出したら追記します。
+
+
+### windowオブジェクトでビルド時にコケる
+
+単純な理由で、SSR時はwindowは存在しないので例えば、enhanceApp.jsに
+```
+window.addEventListener("resize", ()=>{
+    
+});
+```
+とか書いてしまうとビルド時にエラーでます。
+
+対策としては
+```
+if(typeof window === 'undefined'){
+
+}
+```
+で囲むとか、コンポーネントのmounted()に書くとかは考えられます。
+created()はビルド時に実行されます。
+
+同様の理由でwindowを使用しているjsライブラリをimportしているとエラーがおこるので
+使用するときにrequireするという回避策を取らないといけません。
+
+```
+mounted(){
+    const test = require('test')
+}
+```
+
+面倒ですが、慣れるまでは頻繁にビルドして実際にサーバーにあげてみるのがいいとおもいます。
+
+##　総括
+
+長かったですね。
+ここまで読んでくださった方はVuePressに希望を感じたのではないでしょうか。
+なにか間違いなどに気づいた際はコメントいただけると嬉しいです。
+よろしくおねがいします。
+
