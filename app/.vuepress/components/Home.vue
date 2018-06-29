@@ -1,18 +1,24 @@
 <template lang="pug">
 .home
-    p ホームです
+  p {{currentLang}}
+  p ホームです
+    
 </template>
 
 <script>
-
+import { mapState } from 'vuex'
 
 export default {
   props:{},
   components: {},
-  computed: {},
+  computed: {
+    ...mapState(['currentLang']),
+  },
   methods: {},
-  created () {},
-  mounted () {},
+  created () {
+  },
+  mounted () {
+  },
   data () {
     return {}
   },
@@ -21,6 +27,6 @@ export default {
 
 <style lang="stylus" scoped>
 p
-  color: $red
+  color: #f00
 </style>
 

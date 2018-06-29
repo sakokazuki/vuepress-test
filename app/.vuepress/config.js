@@ -2,7 +2,7 @@ const webpack = require('webpack')
 const path = require('path')
 
 module.exports = {
-  base: '/',
+  base: '/__test/vuepress-test/',
   title: 'はじめてのVuePress',
   description: 'VuePressを使用したサイトです。',
   port: '8000',

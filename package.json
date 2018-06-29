@@ -12,6 +12,7 @@
   "devDependencies": {
     "pug": "^2.0.3",
     "pug-plain-loader": "^1.0.0",
-    "vuepress": "^0.10.2"
+    "vuepress": "^0.10.2",
+    "vuex": "^3.0.1"
   }
 }

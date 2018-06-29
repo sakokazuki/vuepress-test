@@ -188,7 +188,7 @@ touch app/.vuepress/components/Home.vue
 ```
 
 とりあえずHome.vueは以下
-(あとではる)
+https://github.com/sakokazuki/vuepress-test/blob/0.0.3/app/.vuepress/components/Home.vue
 
 app/index.md, app/en/index.mdをどちらも以下のようにしましょう。
 本当にこれだけ。これ以降もmdはこれ以外書かない方針にしました。
@@ -326,4 +326,34 @@ module.exports = {
     }
 }
 ~
+```
+
+これでどこでも$redという変数が使えるようになりました。
+適当にHome.vueで
+```Home.vue
+<style lang="stylus" scoped>
+p
+  color: $red
+</style>
+```
+とでもしておきましょう。
+
+ここまでの状態が以下のtagでみることができます
+https://github.com/sakokazuki/vuepress-test/tree/0.0.4
+
+### reset.css的なのいれる
+
+ちょっと重め？のトピックが続いてしまいました。。
+休憩がてらにcss resetしましょう。
+2018年にもなってこんなことしたくないのですが最近のresetcss事情はどうなんでしょうか。
+
+よく知らないので愚直にapp/.vuepress/theme/styles以下にreset.stylとか追加してLayout.vueで指定しちゃいましょう。
+中身は各自おまかせします。。
+
+```bash
+touch app/.vuepress/theme/styles/reset.styl
+```
+
+```Layout.vue
+<style src="./styles/reset.styl" lang="stylus"></style>
 ```
