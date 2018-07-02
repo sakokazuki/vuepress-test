@@ -1,19 +1,39 @@
-## はじめに
+## VuePressとは
 
-VuePressを使ってwebサイトをつくってみたら最高な気持ちになれたので
-サイト制作に使うためのノウハウをシェアしたいと思い、書きました。
-若干トリッキーな使い方をしているので賛否両論あるかとおもいますが
-どうぞよろしくおねがいします。
+こちらの記事にうまくまとまっていました。
+https://qiita.com/dojineko/items/aae7e6d13479e08d49fd
 
-ここでいう"サイト制作"というのはおそらくVuePressが想定しているAPIドキュメント等の制作ではなく
-ポートフォリオサイトや広告キャンペーン等の凝ったデザインのサイト制作を指しています。
+個人的な理解としてはNuxt.jsよりもサイト作成に特化した静的サイトジェネレーター
+という感じです。
 
-記事を読みながらコピペしていったら動かせるを目標にかなり丁寧に書いたらすごく長い記事に
-なってしまいましたが最後まで読めばもう(gulp等任意のタスクランナー)+pug+stylus+es6
-みたいな構成とは全く違うアプローチでのサイト制作ができるのではないかと思います。
+Nuxt.jsもさわってみたんですがgenerateされるファイル群の見た目？や使い勝手など
+VuePressは静的サイトにより特化している印象でした。
 
-執筆時(2018.6.28)vuepressのバージョンは0.10.2
+執筆時(2018.6.28)VuePressのバージョンは0.10.2
 です。
+
+## 序文
+
+ここ数年、gulpはもう辛いからwebpackオンリーでとかParcelのほうが速いとか
+話題になってましたが結局どれ使おうが最終的に書くのはHTML(pug) + css(stylus/sass) + js(jquery)
+
+そもそもその構成が辛いよなぁとおもいながら幸せになれる環境を求めていました。
+
+そんな中、2018年4月某日。VuePressの登場です。
+可能性を感じたのでひと通り仕事で使ってみたのでご紹介させていただければと思います。
+
+VuePressの良いところはVueアプリケーションをつくる感覚で制作をして
+最後にビルドすれば静的なサイトになるという点がほぼ全てです。
+Viewをコンポーネント志向でつくることができて、サイトの状態管理はVuexが使えます。
+
+デメリットといえばVue.jsの学習コストや本記事で説明していくようなVuePressへの慣れだと思います。
+
+記事を読みながらコピペすれば動かせるを目標にかなり丁寧に書いたつもりです。
+その分、すごく長い記事になってしまいましたがある程度のところまで読めば
+VuePressの可能性にかけたくなる気持ちが理解して頂けるような気がしています。
+
+最終的なリポジトリは以下になります。
+https://github.com/sakokazuki/vuepress-test
 
 ## 導入
 とりあえず何も考えずに
@@ -97,8 +117,6 @@ app
 yarn dev
 ```
 
-ここでは何も言及しなければtheme以下のファイルということにします。
-
 まずはLayout.vueを
 https://github.com/sakokazuki/vuepress-test/blob/0.0.1/app/.vuepress/theme/Layout.vue
 この状態まで減らします。
@@ -119,8 +137,8 @@ app/.vuepress/theme
 
 これがミニマムな状態かと思います。
 Layout.vueに残ったスクリプトは$ssrContextらへん(後述)と
-metaタグの設定まわりです。updatemetatagらへんの長くなってるスクリプトは
-サイト作成時にいらないなと思ったら消して個別に書き直すのもいいですが今回はそのままにしておきます。
+metaタグの設定まわりです。updatemetatag周辺もいらなければ消せばいいですが
+もう少し理解が進んだらにしておきましょう。とりあえず残しておきます。
 
 ### はじめてのビルド
 
@@ -214,6 +232,7 @@ https://github.com/sakokazuki/vuepress-test/blob/0.0.3/app/.vuepress/components/
 app/index.md, app/en/index.mdをどちらも以下のようにしましょう。
 本当にこれだけ。これ以降もmdはこれ以外書かない方針にしました。
 front matterでVueに変数渡せるんですがconfigでもできるので、なるべく一箇所にまとめたい意図があります。
+
 ```index.md
 <home/>
 ```
@@ -242,14 +261,16 @@ head: [
 
 [2]に要素の中身を入れられるので変化型としてこういう事もできます
 
-インラインでjs
+インラインでjs。
+
 ```
 ['script', { type: 'text/javascript' }, `
     console.log("head inner script");
 `]
 ```
 
-divタグを入れる
+divタグを入れる。
+
 ```
 ['div', {}, '<!--<div>hoge</div>-->']
 ```
@@ -257,7 +278,7 @@ divタグを入れる
 ### 言語別に<head>の中身を変える
 
 VuePressのconfigにはlocalesというものがあって、
-今回の例でいうとen/以下とdefault(ja)でlant,title,descriptionを
+今回の例でいうとen/以下とdefault(ja)でlang,title,descriptionを
 変更することができます。
 
 https://vuepress.vuejs.org/guide/i18n.html#site-level-i18n-config
@@ -282,6 +303,7 @@ locales: {
 ```bash
 yarn dev
 ```
+
 確認してみましょう。
 chromeで⌘⌥uでソース見ても何も書いていません。
 ⌘⌥iでElementみるとちゃんと入っているようですがdescriptionが重複していたり
@@ -351,12 +373,14 @@ module.exports = {
 
 これでどこでも$redという変数が使えるようになりました。
 適当にHome.vueで
+
 ```Home.vue
 <style lang="stylus" scoped>
 p
   color: $red
 </style>
 ```
+
 とでもしておきましょう。
 
 ここまでの状態が以下のtagでみることができます
@@ -536,6 +560,16 @@ https://github.com/sakokazuki/vuepress-test/blob/0.0.6/app/.vuepress/theme/Layou
 全体
 https://github.com/sakokazuki/vuepress-test/tree/0.0.6
 
+### build後のファイルが<link rel="prefetch">されるのやめる
+
+build後のファイルを眺めていると関連リソースが全て`<link rel="prefetch">`で書かれています。
+レスポンシブなサイトになっていて、別にSPでPC用のリソースをprefetchする必要のない場合など、
+無駄なDLが発生するので切っておきましょう
+
+```config.js
+~
+shouldPrefetch: ()=>{ return false }
+```
 
 ## VuePressの悪いところ
 
@@ -585,4 +619,6 @@ mounted(){
 ここまで読んでくださった方はVuePressに希望を感じたのではないでしょうか。
 なにか間違いなどに気づいた際はコメントいただけると嬉しいです。
 よろしくおねがいします。
+
+
 
